@@ -24,6 +24,8 @@ const pubsub = new PubSub();
 const ADDED_REVIEW_TOPIC = 'new_review';
 
 const schemaString = `
+scalar Upload
+
 schema {
   query: Query
   mutation: Mutation
@@ -44,6 +46,7 @@ type Query {
 # The mutation type, represents all updates we can make to our data
 type Mutation {
   createReview(episode: Episode, review: ReviewInput!): Review
+  singleUpload(file: Upload!): File!
 }
 
 # The subscription type, represents all subscriptions we can make to our data
@@ -139,6 +142,13 @@ type Droid implements Character {
 
   # This droid's primary function
   primaryFunction: String
+}
+
+# A file stored in the targeting computer
+type File {
+  filename: String!
+  mimetype: String!
+  encoding: String!
 }
 
 # A connection object for a character's friends
@@ -426,6 +436,14 @@ const resolvers = {
       review.episode = episode;
       pubsub.publish(ADDED_REVIEW_TOPIC, {reviewAdded: review});
       return review;
+    },
+    singleUpload: (parent, args) => {
+      return args.file.then(file => {
+        //Contents of Upload scalar: https://github.com/jaydenseric/graphql-upload#class-graphqlupload
+        //file.stream is a node stream that contains the contents of the uploaded file
+        //node stream api: https://nodejs.org/api/stream.html
+        return file;
+      });
     },
   },
   Subscription: {
