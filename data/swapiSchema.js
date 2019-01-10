@@ -47,6 +47,7 @@ type Query {
 type Mutation {
   createReview(episode: Episode, review: ReviewInput!): Review
   singleUpload(file: Upload!): File!
+  multipleUpload(files: [Upload!]!): [File!]!
 }
 
 # The subscription type, represents all subscriptions we can make to our data
@@ -445,6 +446,14 @@ const resolvers = {
         return file;
       });
     },
+    multipleUpload: (parent, args) => {
+      return Promise.all(args.files).then(files => {
+        //Contents of Upload scalar: https://github.com/jaydenseric/graphql-upload#class-graphqlupload
+        //file.stream is a node stream that contains the contents of the uploaded file
+        //node stream api: https://nodejs.org/api/stream.html
+        return files;
+      });
+    }
   },
   Subscription: {
     reviewAdded: {
